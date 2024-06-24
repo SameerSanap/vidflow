@@ -1,5 +1,12 @@
-import { View, Text, SafeAreaView, FlatList, Image } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  FlatList,
+  Image,
+  RefreshControl,
+} from "react-native";
 import images from "../../constants/images";
 import Search from "../../components/Search";
 import EmptyState from "../../components/EmptyState";
@@ -9,10 +16,18 @@ import VideoCard from "../../components/VideoCard";
 import Trending from "../../components/Trending";
 import { useAuth } from "../../context/authContext";
 
-export default function home() {
-  const { data: posts } = useAppwrite(getPosts);
-  const { data: Latestposts } = useAppwrite(getLatestPosts);
+export default function Home() {
+  const { data: posts, loading: loadingPosts, refetch } = useAppwrite(getPosts);
+  const { data: latestPosts, loading: loadingLatestPosts } =
+    useAppwrite(getLatestPosts);
   const { user } = useAuth();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    refetch();
+    setRefreshing(false);
+  };
 
   return (
     <SafeAreaView className="bg-primary h-screen">
@@ -32,7 +47,7 @@ export default function home() {
             <View className="justify-between items-start flex-row mb-6">
               <View>
                 <Text className="text-sm font-pmedium text-gray-100">
-                  WelCome Back!
+                  Welcome Back!
                 </Text>
                 <Text className="text-2xl font-psemibold text-white">
                   {user?.username}
@@ -47,8 +62,11 @@ export default function home() {
               <Text className="text-lg font-pregular text-gray-100 mb-3">
                 Trending AI Images
               </Text>
-
-              <Trending posts={Latestposts ?? []} />
+              {loadingLatestPosts ? (
+                <Text>Loading...</Text>
+              ) : (
+                <Trending posts={latestPosts} />
+              )}
             </View>
           </View>
         )}
@@ -58,6 +76,9 @@ export default function home() {
             subtitle="No videos created yet"
           />
         )}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
     </SafeAreaView>
   );

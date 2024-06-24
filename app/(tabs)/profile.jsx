@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  Text,
-  RefreshControl,
-} from "react-native";
+import { View, FlatList, Image, TouchableOpacity, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import useAppwrite from "../../lib/useAppwrite";
@@ -22,10 +15,10 @@ import * as ImagePicker from "expo-image-picker";
 import { updateProfile } from "../../lib/appwrite";
 
 const Profile = () => {
-  const { user, setUser, setIsLogin, refetch } = useAuth();
+  const { user, setUser, setIsLogin } = useAuth();
   const { data: posts } = useAppwrite(() => getUserPosts(user.$id));
   const [profile, setUpdateProfile] = useState(null);
-  const [refreshing, setRepreshing] = useState(false);
+
   const openPicker = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -37,7 +30,7 @@ const Profile = () => {
       const selectedAsset = result.assets[0];
       setUpdateProfile(selectedAsset);
     }
-
+    
     try {
       if (profile) {
         console.log("Profie:", profile);
@@ -57,14 +50,9 @@ const Profile = () => {
       router.replace("/SignIn");
     } catch (error) {
       console.error("Error during logout:", error);
-      Alert.alert("Information", "User dont have post yet");
     }
   };
-  const onRepresh = async () => {
-    setRepreshing(true);
-    refetch();
-    setRepreshing(false);
-  };
+
   return (
     <SafeAreaView className="bg-primary h-full">
       <FlatList
@@ -136,9 +124,6 @@ const Profile = () => {
         ListEmptyComponent={() => (
           <EmptyState title="No User Found" subtitle="No videos yet" />
         )}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRepresh} />
-        }
       />
     </SafeAreaView>
   );
